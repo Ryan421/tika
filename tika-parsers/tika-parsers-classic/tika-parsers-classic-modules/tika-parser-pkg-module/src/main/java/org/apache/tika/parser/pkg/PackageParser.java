@@ -392,6 +392,15 @@ public class PackageParser extends AbstractParser {
                             XHTMLContentHandler xhtml)
             throws SAXException, IOException, TikaException {
         String name = entry.getName();
+        
+        //Try to detect charset of archive entry in case of non-unicode filename is used
+        if (entry instanceof ZipArchiveEntry) {
+            detector.setText(((ZipArchiveEntry) entry).getRawName());
+            CharsetMatch match = detector.detect();
+            if (match != null)
+                name = new String(((ZipArchiveEntry) entry).getRawName(), match.getName());
+        }
+        
         if (archive.canReadEntryData(entry)) {
             // Fetch the metadata on the entry contained in the archive
             Metadata entrydata =
